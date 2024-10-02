@@ -1,0 +1,168 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master-Detail Stock Chart</title>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/accessibility.js"></script>
+</head>
+
+<body>
+
+    <div id="container" style="height: 400px; min-width: 310px"></div>
+    <div id="detail-container" style="height: 400px; min-width: 310px"></div>
+
+    <script>
+        // The master chart shows daily values of product around 6 month for a parameter,
+        //while the detail chart shows hourly values for two parameters for a product .
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sample JSON data for master chart (daily values for 6 months)
+            const masterData = [
+                [Date.UTC(2024, 0, 1), 10],
+                [Date.UTC(2024, 1, 1), 15],
+                [Date.UTC(2024, 2, 1), 12],
+                [Date.UTC(2024, 3, 1), 18],
+                [Date.UTC(2024, 4, 1), 14],
+                [Date.UTC(2024, 5, 1), 20],
+
+
+            ]; //timestamps
+
+            // Sample JSON data for detail chart (hourly values for a month)
+            const detailData1 = [
+                [Date.UTC(2024, 4, 1, 0), 11],
+                [Date.UTC(2024, 4, 1, 1), 12],
+                [Date.UTC(2024, 4, 1, 2), 13],
+                [Date.UTC(2024, 4, 1, 3), 14],
+                [Date.UTC(2024, 4, 1, 4), 15],
+                [Date.UTC(2024, 4, 1, 5), 21],
+                [Date.UTC(2024, 4, 1, 6), 17],
+                [Date.UTC(2024, 4, 1, 7), 18],
+                [Date.UTC(2024, 4, 1, 8), 19],
+                [Date.UTC(2024, 4, 1, 9), 20]
+            ];
+
+            const detailData2 = [
+                [Date.UTC(2024, 4, 1, 0), 21],
+                [Date.UTC(2024, 4, 1, 1), 20],
+                [Date.UTC(2024, 4, 1, 2), 19],
+                [Date.UTC(2024, 4, 1, 3), 20],
+                [Date.UTC(2024, 4, 1, 4), 17],
+                [Date.UTC(2024, 4, 1, 5), 16],
+                [Date.UTC(2024, 4, 1, 6), 15],
+                [Date.UTC(2024, 4, 1, 7), 14],
+                [Date.UTC(2024, 4, 1, 8), 11],
+                [Date.UTC(2024, 4, 1, 9), 12]
+            ];
+
+            // Create the master chart
+            Highcharts.stockChart('container', {
+                chart: {
+                    events: {
+                        // On selection, update the detail chart
+                        //This event is triggered when the user selects a range on the master chart 
+                        selection: function(event) {
+                            const xAxis = event.xAxis[0];
+                            const min = xAxis.min;
+                            const max = xAxis.max;
+
+                            // Filter detail data based on the selected range
+                            // min and max: Get the selected range (x-axis)
+                            //Filters detail data (detailData1, detailData2) to fit within the selected date range.
+                            const filteredDetailData1 = detailData1.filter(point => point[0] >= min && point[0] <= max);
+                            const filteredDetailData2 = detailData2.filter(point => point[0] >= min && point[0] <= max);
+
+
+                            // Updates the detail chart with the filtered data.
+                            detailChart.series[0].setData(filteredDetailData1);
+                            detailChart.series[1].setData(filteredDetailData2);
+
+                            return false;
+                        }
+                    }
+                },
+                rangeSelector: {
+                    selected: 1
+                },
+                title: {
+                    text: 'Parameter-1 Daily Values'
+                },
+                series: [{ //Defines the chart's data
+                    name: 'Parameter-1',
+                    data: masterData,
+                    type: 'area',
+                    threshold: null,
+                    tooltip: { //Formats tooltip values with two decimals.
+                        valueDecimals: 2
+                    },
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            x2: 0,
+                            y1: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, Highcharts.getOptions().colors[0]],
+                            [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        ]
+                    }
+                }]
+            });
+
+            // Create the detail chart
+            const detailChart = Highcharts.chart('detail-container', {
+                chart: {
+                    type: 'area'
+                },
+                title: {
+                    text: 'Parameter-1 and Parameter-2 Hourly Values'
+                },
+                xAxis: {
+                    type: 'datetime'
+                },
+                yAxis: {
+                    title: {
+                        text: 'Values'
+                    }
+                },
+                series: [{ //Defines the chart's data
+                    name: 'Parameter-1',
+                    data: detailData1,
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            x2: 0,
+                            y1: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, Highcharts.getOptions().colors[0]],
+                            [1, Highcharts.color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
+                        ]
+                    }
+                }, {
+                    name: 'Parameter-2',
+                    data: detailData2,
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,
+                            x2: 0,
+                            y1: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, Highcharts.getOptions().colors[1]],
+                            [1, Highcharts.color(Highcharts.getOptions().colors[1]).setOpacity(0).get('rgba')]
+                        ]
+                    }
+                }]
+            });
+        });
+    </script>
+</body>
+
+</html>
